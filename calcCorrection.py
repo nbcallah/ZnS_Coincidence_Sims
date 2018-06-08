@@ -50,7 +50,7 @@ def alphabeta(points):
 	
 	return (alpha, alphaErr), (beta, betaErr)
 
-data = np.loadtxt(sys.stdin, dtype=float32)
+data = np.loadtxt(sys.stdin, dtype=np.float32)
 
 if(data.shape[1] != 3):
     sys.exit("Error! Malformed input")

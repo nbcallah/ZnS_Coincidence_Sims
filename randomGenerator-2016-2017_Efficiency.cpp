@@ -304,6 +304,7 @@ int main(int argc, char** argv) {
     std::vector<double> bkgCts;
     int numRuns = 0;
     //First measure the background rate by generating lots of runs with 1 nanoHz rate
+    fprintf(stderr, "# Calculating Bkg!\n");
     do {
         long createdCts;
         std::vector<event> vec = createSynthRun(&sfmt, 1e-9, pop, pop64, createdCts);
@@ -319,6 +320,7 @@ int main(int argc, char** argv) {
     
     double bkgRate = mean/100;
 //    printf("bkg: %f (%d runs)\n", bkgRate, numRuns);
+    fprintf(stderr, "# BkgRate: %f\n", bkgRate);
     
     std::vector<double> efficiencies;
     std::vector<double> efficiencies_err;
@@ -326,6 +328,7 @@ int main(int argc, char** argv) {
     
     //Check efficiency for 3 different rates
     for(int i = 100; i < 14000; i+= 5000) {
+        fprintf(stderr, "# Starting rate %d\n", i);
         double sumCts = 0.0;
         int ltNum = 0;
         std::vector<double> eff;
@@ -360,6 +363,10 @@ int main(int argc, char** argv) {
             stdDev = sqrt(std::accumulate(eff.begin(), eff.end(), 0.0, [mean](double sum, double e){return sum+pow((e-mean), 2);})/(eff.size()-1));
 
             stdDev = ltNum >= 10 ? stdDev : std::numeric_limits<double>::infinity();
+            
+            if(ltNum % 10 == 0) {
+                fprintf(stderr, "# Current Precision - %f\n", (stdDev/sqrt(eff.size()))/mean);
+            }
 
         } while((stdDev/sqrt(eff.size()))/mean > precision);
         

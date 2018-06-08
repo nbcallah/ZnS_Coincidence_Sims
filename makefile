@@ -4,15 +4,15 @@ SFMTFLAGS = -msse2 -DHAVE_SSE2 -DSFMT_MEXP=19937
 
 PARALLEL := $(shell command -v mpic++ 2> /dev/null)
 
-debug: CFLAGS = -g -DDEBUG
-debug: all
-
 all:
 ifndef PARALLEL
 all: single
 else
 all: parallel
 endif
+
+debug: CFLAGS = -g -DDEBUG
+debug: all
 
 single: CPP = g++
 single: CC = gcc
