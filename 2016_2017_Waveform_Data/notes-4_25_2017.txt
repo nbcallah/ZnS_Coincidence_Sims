@@ -1,0 +1,2 @@
+Foreground PHS/Waveforms made with 50 500 4 5 2; looked for coincidences with no other coincidences within 40us
+BKG PHS/Waveforms made with 50 500 2 5 2; ditto. Took Background from all long runs during holding.

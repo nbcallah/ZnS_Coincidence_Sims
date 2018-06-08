@@ -33,7 +33,7 @@ extern "C" {
 	#define LOCATION "/Users/nate/Ultra_Cold_Neutrons/2016-2017/NatesAnalyzer-Clone/synthetic_data/BRII/2016_2017_Waveform_Data"
 #endif
 
-//#define LENGTH 100.0
+#define LENGTH 100.0
 
 #define BKGRATEA 560
 #define BKGRATEB 545
@@ -81,23 +81,6 @@ struct dip {
 	double cts;
 };
 
-struct measurement {
-	double val;
-	double err;
-	measurement operator/(const measurement& rhs) {
-		return measurement {val/rhs.val, val/rhs.val*sqrt(pow(err/val, 2.0)+pow(rhs.err/rhs.val, 2.0))};
-	}
-	measurement operator*(const measurement& rhs) {
-		return measurement {val*rhs.val, val*rhs.val*sqrt(pow(err/val, 2.0)+pow(rhs.err/rhs.val, 2.0))};
-	}
-	measurement operator+(const measurement& rhs) {
-		return measurement {val+rhs.val, sqrt(err*err+rhs.err*rhs.err)};
-	}
-	measurement operator-(const measurement& rhs) {
-		return measurement {val-rhs.val, sqrt(err*err+rhs.err*rhs.err)};
-	}
-};
-
 #ifdef DEBUG
 	template class std::vector<double>;
 	template class std::vector<event>;
@@ -131,22 +114,14 @@ histGen* phs_bkg;
 
 int nph[7] = {4, 5, 6, 7, 8, 9, 10};
 double window[8] = {200, 250, 300, 350, 400, 500, 750, 1000};
-//double coincbkg[7][8] = {{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-//						 {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-//						 {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-//						 {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-//						 {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-//						 {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-//						 {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}};
-double coincbkg[7][8] ={{1.198134730539,1.223737003058,1.241981424149,1.258849056604,1.271412698413,1.297482200647,1.346610738255,1.381534482759,},
-{0.562505617978,0.576792507205,0.589269513991,0.600774774775,0.612515290520,0.629973228346,0.663006622517,0.689825862069,},
-{0.274744505495,0.283271054494,0.290568627451,0.297097253155,0.303093181818,0.314630503145,0.333898998331,0.346852686308,},
-{0.150076519130,0.154173025048,0.159034578696,0.162370941558,0.165102352456,0.171304366438,0.183113501144,0.190070308789,},
-{0.094266258247,0.096429260063,0.098691662556,0.101049002273,0.102924620530,0.105916070956,0.112568936410,0.117171060340,},
-{0.067602568435,0.069441416421,0.070615710503,0.071992262012,0.073076909024,0.075151606237,0.078647336348,0.081723391216,},
-{0.054136419001,0.055077103125,0.056018764879,0.056862402274,0.057636075493,0.058907377411,0.061307126437,0.063176563487,},
-};
-//double window[12] = {250, 500, 750, 1000, 1250, 1500, 2000, 200, 300, 350, 400, 450};
+//double coincbkg[7][8] ={{1.198134730539,1.223737003058,1.241981424149,1.258849056604,1.271412698413,1.297482200647,1.346610738255,1.381534482759,},
+//{0.562505617978,0.576792507205,0.589269513991,0.600774774775,0.612515290520,0.629973228346,0.663006622517,0.689825862069,},
+//{0.274744505495,0.283271054494,0.290568627451,0.297097253155,0.303093181818,0.314630503145,0.333898998331,0.346852686308,},
+//{0.150076519130,0.154173025048,0.159034578696,0.162370941558,0.165102352456,0.171304366438,0.183113501144,0.190070308789,},
+//{0.094266258247,0.096429260063,0.098691662556,0.101049002273,0.102924620530,0.105916070956,0.112568936410,0.117171060340,},
+//{0.067602568435,0.069441416421,0.070615710503,0.071992262012,0.073076909024,0.075151606237,0.078647336348,0.081723391216,},
+//{0.054136419001,0.055077103125,0.056018764879,0.056862402274,0.057636075493,0.058907377411,0.061307126437,0.063176563487,},
+//};
 
 template<typename T, typename F>
 void loadTextHistogram(histGen* &gen, std::string fName, std::vector<T> &vec, F f);
@@ -156,61 +131,13 @@ void fillRandomArray(sfmt_t* sfmt, T* ary, int num, F f);
 
 std::vector<event> createSynthRun(sfmt_t* sfmt, double rate, std::function<double(sfmt_t*)> pop, std::function<uint64_t(sfmt_t*)>pop64, long &numCreated);
 
-double getDeadTimeCounts(std::vector<double> dtHist, std::vector<double> coincHist) {
-	double deadTimeCounts = 0.0;
-	auto dtIt = dtHist.begin();
-	for(auto cIt = coincHist.begin(); cIt < coincHist.end(); cIt++) {
-//		deadTimeCounts += (*cIt/(1.0-*dtIt/(1.0/10.0)) - *cIt);
-		//deadTimeCounts += (*cIt/((1.0/10.0 - *dtIt)/(1.0/10.0)) - *cIt);
-		printf("%.12e\n", *dtIt/(*cIt));
-		dtIt++;
-	}
-	return deadTimeCounts;
-}
-
-//void getCoincs2(std::vector<event> data, std::vector<double> &coincs, std::vector<double> &dtHist, std::vector<double> &coincHist) {
-//	for(int i = 0; i < 10*ceil(data.back().realtime); i++) {
-//		dtHist.push_back(0.0);
-//		coincHist.push_back(0.0);
-//	}
-//	std::vector<iat> ttne;
-//	for(auto it = data.begin(); it < data.end(); it++) {
-//		if(it->ch != 1 && it->ch != 2) { continue; }
-//
-//		auto nextDiff = std::find_if(it+1, data.end(), [it](event x){return (x.ch == 1 && it->ch == 2) || (x.ch == 2 && it->ch == 1);});
-//		auto next = std::find_if(it+1, data.end(), [](event x){return (x.ch == 1) || (x.ch == 2);});
-//
-//		//if(next == data.end()) { break; }
-//		
-//		iat evt;
-//		evt.t = it->realtime;
-//		evt.dt =  next < data.end() ? next->realtime - it->realtime : std::numeric_limits<double>::infinity();
-//		//evt.dt =  next->realtime - it->realtime;
-//		evt.dtDiff = nextDiff < data.end() ? nextDiff->realtime - it->realtime : std::numeric_limits<double>::infinity();
-//		
-//		ttne.push_back(evt);
-//	}
-//	for(auto it = ttne.begin(); it < ttne.end(); it++) {
-//		if(it->dtDiff < COINCWINDOW*NANOSECOND) { //Have a coincidence!
-//			auto cIt = std::find_if(it+1, ttne.end(), [](iat x){return x.dt > PESUMWINDOW*NANOSECOND;});
-//			int numPE = std::distance(it, cIt) + 1;
-//			if(numPE >= PESUM) {
-//				dtHist[(int)(10*it->t)] += ((cIt)->t - it->t);
-//				coincHist[(int)(10*it->t)] += 1;
-//				it = cIt;
-//			}
-//		}
-//	}
-//}
-void getCoincs(std::vector<event> data, std::vector<double> &coincs, std::vector<double> &dtHist, std::vector<double> &coincHist, int inumPH, int ipesumWindow) {
-	int i;
+double sumCtsCorrected(std::vector<event> data, int numPH, double window) {
+    int i;
 	int cur;
 	int tailIt;
-
-	for(i = 0; i < 10*ceil(data.back().realtime); i++) {
-		dtHist.push_back(0.0);
-		coincHist.push_back(0.0);
-	}
+    
+    double numCoinc;
+    
 	for(i = 0; i < data.size(); i++) { //Look at each entry of the data vector
 		int ch1PESum = 0;
 		int ch2PESum = 0;
@@ -252,8 +179,7 @@ void getCoincs(std::vector<event> data, std::vector<double> &coincs, std::vector
 				
 				for(tailIt = cur+1; tailIt < data.size(); tailIt++) { //Now integrate the tail
 					double diff = (data.at(tailIt).realtime - prevEvt.realtime);
-//					if((data.at(tailIt).realtime - prevEvt.realtime) > PESUMWINDOW*NANOSECOND) {
-					if((data.at(tailIt).realtime - prevEvt.realtime) > window[ipesumWindow]*NANOSECOND) {
+					if((data.at(tailIt).realtime - prevEvt.realtime) > window*NANOSECOND) {
 						break;
 					}
 					if(data.at(tailIt).ch != 1 && data.at(tailIt).ch != 2) { continue; }
@@ -265,13 +191,8 @@ void getCoincs(std::vector<event> data, std::vector<double> &coincs, std::vector
 					}
 					prevEvt = data.at(tailIt);
 				}
-				//if(ch1PESum >= peSum && ch2PESum >= peSum) { //Found Neutron!
-//				if(ch1PESum + ch2PESum >= PESUM) {
-				if(ch1PESum + ch2PESum >= nph[inumPH]) {
-					//coincs.push_back(data.at(i).realtime);
-					dtHist[(int)(10*data[i].realtime)] += (prevEvt.realtime - data.at(i).realtime) + window[ipesumWindow]*NANOSECOND;
-					//printf("Boo!! %d, %f, %f\n", (int)data[i].realtime, (prevEvt.realtime - data.at(i).realtime), dtHist[(int)data[i].realtime]);
-					coincHist[(int)(10*data[i].realtime)] += 1;
+				if(ch1PESum + ch2PESum >= numPH) {
+					numCoinc += 1;
 					i = tailIt-1; //Only impose deadtime on counted neutrons; Otherwise continue looking.
 					cur = tailIt-1;
 					break;
@@ -281,49 +202,15 @@ void getCoincs(std::vector<event> data, std::vector<double> &coincs, std::vector
 //			break;
 		}
 	}
-}
-
-measurement normNByDip(std::vector<event> run, int inumPH, int ipesumWindow) {
-	measurement num;
-	
-	std::vector<double> coincs;
-	std::vector<double> dtHist;
-	std::vector<double> coincHist;
-	getCoincs(run, coincs, dtHist, coincHist, inumPH, ipesumWindow);
-	
-	//double dagCts = std::accumulate(coincs.begin(), coincs.end(), 0.0, [startTime, stopTime](double sum, double time){return time > startTime && time < stopTime ? sum + 1.0 : sum;});
-	
-	double dagCts = std::accumulate(coincHist.begin(), coincHist.end(), 0.0, [](double sum, double cts){return sum + cts;});
-	//printf("numCts: %f\n", dagCts / 120.0);
-
-	double deadTimeCounts = getDeadTimeCounts(dtHist, coincHist);
-	//printf("dt: %f\n", deadTimeCounts);
-	
-	double bkgrate = coincbkg[inumPH][ipesumWindow];
-	
-	//num = {dagCts+deadTimeCounts-bkgrate*(coincHist.size()/10.0), sqrt(dagCts+deadTimeCounts+bkgrate*(coincHist.size()/10.0))};
-	num = {dagCts-bkgrate*(coincHist.size()/10.0), sqrt(dagCts+bkgrate*(coincHist.size()/10.0))};
-	//num = {dagCts, sqrt(dagCts)};
-	
-	return num;
+    return numCoinc;
 }
 
 int main(int argc, char** argv) {
 	int c;
-	
-//	double tau = -1.0;
-//	double hits = 0;
+
 	double rate = 0.0;
 	double precision = 0.0;
-	int inumPH = -1;
-	int ipesumWindow = -1;
-//	double start = -1.0;
-//	double length = -1.0;
-//	char* pattern;
-//	int startNum = -1;
-//	int endNum = -1;
-//	char fName[256];
-	
+
 	while (1)
 	{
 		static struct option long_options[] =
@@ -332,14 +219,12 @@ int main(int argc, char** argv) {
 			 We distinguish them by their indices. */
 			{"rate", required_argument, 0, 'r'},
 			{"precision", required_argument, 0, 'p'},
-			{"numpe", required_argument, 0, 'n'},
-			{"window", required_argument, 0, 'w'},
 			{0, 0, 0, 0}
 		};
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
 
-		c = getopt_long (argc, argv, "r:p:n:w", long_options, &option_index);
+		c = getopt_long (argc, argv, "r:p", long_options, &option_index);
 
 		/* Detect the end of the options. */
 		if (c == -1) { break; }
@@ -356,60 +241,44 @@ int main(int argc, char** argv) {
 			case 'p':
 				precision = atof(optarg);
 				break;
-				
-			case 'n':
-				inumPH = atoi(optarg);
-				break;
-				
-			case 'w':
-				ipesumWindow = atoi(optarg);
-				break;
 
 			default:
 				abort();
 		}
 	}
 
-	if(rate == 0.0 || precision == 0.0 || inumPH < 0 || ipesumWindow < 0) {
-		fprintf(stderr, "Error! Usage: ./randomGenerator --hits=num_hits_100s --precision=final_rel_precision --numpe=numpe --window=integration_window\n");
+	if(rate == 0.0 || precision == 0.0) {
+		fprintf(stderr, "Error! Usage: ./randomGenerator --rate=rate --precision=final_rel_precision\n");
 		exit(1);
 	}
 	
-	MPI_Init(NULL, NULL);
-	 // Get the number of processes
-	int world_size;
-	MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    #ifdef PARALLEL
+        MPI_Init(NULL, NULL);
+         // Get the number of processes
+        int world_size;
+        MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-	// Get the rank of the process
-	int world_rank;
-	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+        // Get the rank of the process
+        int world_rank;
+        MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+    
+        sfmt_t sfmt;
+        uint32_t seed[4] = {2736687128, 234302120, 3355772407, 657836083};
+        sfmt_init_by_array(&sfmt, seed, 4);
+        //sfmt_init_gen_rand(&sfmt, (uint32_t)4321);
 
-	sfmt_t sfmt;
-	uint32_t seed[4] = {2736687128, 234302120, 3355772407, 657836083};
-	sfmt_init_by_array(&sfmt, seed, 4);
-	//sfmt_init_gen_rand(&sfmt, (uint32_t)4321);
-	
-	for(int i = 0; i < world_rank; i++) {
-		SFMT_jump(&sfmt, jumpPolynomial);
-	}
-	
-//	histGen* gen;
+        for(int i = 0; i < world_rank; i++) {
+            SFMT_jump(&sfmt, jumpPolynomial);
+        }
+    #else
+        sfmt_t sfmt;
+        uint32_t seed[4] = {2736687128, 234302120, 3355772407, 657836083};
+        sfmt_init_by_array(&sfmt, seed, 4);
+        //sfmt_init_gen_rand(&sfmt, (uint32_t)4321);
+    #endif
 	
 	std::vector<unsigned long> dump;
-//	std::vector<ph> phsVect;
-//	std::vector<ph> phsVect_bkg;
-//	
-//	histGen* gen_ch1_1;
-//	histGen* gen_ch1_2;
-//	histGen* gen_ch2_1;
-//	histGen* gen_ch2_2;
-//	histGen* gen_phs;
-//	histGen* gen_ch1_1_bkg;
-//	histGen* gen_ch1_2_bkg;
-//	histGen* gen_ch2_1_bkg;
-//	histGen* gen_ch2_2_bkg;
-//	histGen* gen_phs_bkg;
-	
+
 	auto waveformFunc = [](std::string s)->unsigned long{return std::stoul(s);};
 	auto phsFunc = [](std::string s)->ph{
 		std::stringstream ss(s);
@@ -441,19 +310,6 @@ int main(int argc, char** argv) {
 	
 	int i = 0;
 	
-	measurement cts= {0.0, 0.0};
-//	measurement eff;
-	
-	long createdCts;
-	std::vector<double> eff;
-	double mean = 0.0;
-	double stdDev = 0.0;
-	double sumCts = 0.0;
-	//measurement sumCreated = {0.0, 0.0};
-	//measurement sum = {0.0, 0.0};
-	
-	int ltNum = 0;
-	
 	//Create a little object that acts as a buffer of random numbers.
 	int numPops = 0;
 	double *src = new double[1000];
@@ -484,70 +340,72 @@ int main(int argc, char** argv) {
 		numPops64++;
 		return ret;
 	};
-	//
-//	printf("{");
-//	for(inumPH = 0; inumPH < 7; inumPH++) {
-//		printf("{");
-//		for(ipesumWindow = 0; ipesumWindow < 8; ipesumWindow++) {
-			sumCts = 0.0;
-			ltNum = 0;
-			eff.clear();
-			do {
-		//		measurement cts= {0.0, 0.0};
-		//		long createdCts;
-		//		measurement sumCreated = {0.0, 0.0};
-		//		measurement sum = {0.0, 0.0};
-				ltNum += 1;
+    
+    int numPh = 8;
+    double window = 500.0;
+    
+    double mean = 0.0;
+	double stdDev = 0.0;
+    std::vector<double> bkgCts;
+    int numRuns = 0;
+    do {
+        long createdCts;
+        std::vector<event> vec = createSynthRun(&sfmt, 1e-6, pop, pop64, createdCts);
+        double cts = sumCtsCorrected(vec, numPh, window);
+        bkgCts.push_back(cts);
+        numRuns += 1;
 
-				std::vector<event> vec = createSynthRun(&sfmt, rate, pop, pop64, createdCts);
+        mean = std::accumulate(bkgCts.begin(), bkgCts.end(), 0.0, [](double sum, double e){return sum+e;})/bkgCts.size();
+        stdDev = sqrt(std::accumulate(bkgCts.begin(), bkgCts.end(), 0.0, [mean](double sum, double e){return sum+pow((e-mean), 2);})/(bkgCts.size()-1));
+        stdDev = numRuns >= 10 ? stdDev : std::numeric_limits<double>::infinity();
+//        printf("mean: %f stdDev: %f precision: %f\n", mean/100, stdDev/100, (stdDev/sqrt(bkgCts.size()))/mean);
+    } while((stdDev/sqrt(bkgCts.size()))/mean > 0.005);
+    
+    double bkgRate = mean/100;
+//    printf("bkg: %f (%d runs)\n", bkgRate, numRuns);
+    
+    std::vector<double> efficiencies;
+    std::vector<double> efficiencies_err;
+    std::vector<double> rates;
+    
+    for(int i = 100; i < 10001; i+= 5000) {
+        double sumCts = 0.0;
+        int ltNum = 0;
+        std::vector<double> eff;
+        
+        rate = (double)i;
+        do {
+            long createdCts;
+            ltNum += 1;
 
-				cts = normNByDip(vec, inumPH, ipesumWindow);
-				sumCts += cts.val;
+            std::vector<event> vec = createSynthRun(&sfmt, rate, pop, pop64, createdCts);
 
-				eff.push_back(cts.val/((double)createdCts));
+            double cts = sumCtsCorrected(vec, numPh, window);
+            cts -= bkgRate * LENGTH;
 
-				mean = std::accumulate(eff.begin(), eff.end(), 0.0, [](double sum, double e){return sum+e;})/eff.size();
-				stdDev = sqrt(std::accumulate(eff.begin(), eff.end(), 0.0, [mean](double sum, double e){return sum+pow((e-mean), 2);})/(eff.size()-1));
+            sumCts += cts;
 
-				stdDev = ltNum >= 10 ? stdDev : std::numeric_limits<double>::infinity();
+            eff.push_back(cts/((double)createdCts));
 
-		//		
-		//		
-		//		sumCreated = sumCreated + measurement{(double)createdCts, sqrt((double)createdCts)};
-		//		
-		//		cts = normNByDip(vec, inumPH, ipesumWindow);
-		//		sum = sum + cts;
-		//		
-		//		eff = sum / sumCreated;
-		//		eff.err = sqrt(eff.val*(1-eff.val)/sumCreated.val);
-		//	} while(sumCts < 400000);
-			} while((stdDev/sqrt(eff.size()))/mean > precision);
-			printf("Final : %f,%.12f,%.12f,%d,%d,%f\n", rate, mean, (stdDev/sqrt(eff.size())), ltNum, nph[inumPH], window[ipesumWindow]);
-			printf("Sum: %f,%d,%d,%f\n", sumCts, ltNum, nph[inumPH], window[ipesumWindow]);
-//			printf("%.12f,", sumCts/(ltNum*1000.0));
-//		}
-//		printf("},\n");
-//	}
-//	printf("}\n");
-	
-//	printf("Final : %f,%.12f,%.12f,%d,%d,%f\n", rate, mean, (stdDev/sqrt(eff.size())), ltNum, nph[inumPH], window[ipesumWindow]);
-//	printf("Sum: %f,%d,%d,%f\n", sumCts, ltNum, nph[inumPH], window[ipesumWindow]);
+            mean = std::accumulate(eff.begin(), eff.end(), 0.0, [](double sum, double e){return sum+e;})/eff.size();
+            stdDev = sqrt(std::accumulate(eff.begin(), eff.end(), 0.0, [mean](double sum, double e){return sum+pow((e-mean), 2);})/(eff.size()-1));
 
-//	printf("Bkg: %f,%d,%f\n", sumCts/(ltNum*1000.0), nph[inumPH], window[ipesumWindow]);
-		//fflush(stdout);
-//	} while(sqrt(sqErrSum)/ltNum > sqrt((double)world_size)*precision);
-//	} while(err > sqrt((double)world_size)*precision);
-//	} while(ltNum < 19999);
-	
-//	printf("%f\n", sumShort); printf("%f\n", sumLong); printf("%d\n", ltNum);
-	
-//	printf("Final : %f,%f\n", ltSum/ltNum, sqrt(sqErrSum)/ltNum);
-//	printf("Final : %f,%f\n", lt, err);
-//	printf("Sums: %f, %f\n", sumShort, sumLong);
-//	printf("num: %d\n", ltNum);
-	
-	//printf("Num Ints: %llu\n", numInts);
-	
+            stdDev = ltNum >= 10 ? stdDev : std::numeric_limits<double>::infinity();
+
+        } while((stdDev/sqrt(eff.size()))/mean > precision);
+        
+        efficiencies.push_back(mean);
+        efficiencies_err.push_back((stdDev/sqrt(eff.size())));
+        rates.push_back(rate);
+        
+        printf("%.12f,%.12f,%.12f\n", rate, mean, (stdDev/sqrt(eff.size())));
+
+//        printf("Final : %f,%.12f,%.12f,%d,%d,%f\n", rate, mean, (stdDev/sqrt(eff.size())), ltNum, 8, window);
+//        printf("Sum: %f,%d,%d,%f\n", sumCts, ltNum, numPh, window);
+    }
+    
+    
+
 	delete[] src;
 	delete[] src64;
 	freeGen(ch1_1);
@@ -561,20 +419,9 @@ int main(int argc, char** argv) {
 	freeGen(ch2_2_bkg);
 	freeGen(phs_bkg);
 	
-	MPI_Finalize();
-	
-	
-	
-	/*for(i = startNum; i <= endNum; i++) {
-		sprintf(fName, pattern, i);
-		if(shortRun) {
-			createSynthRun(&sfmt, fName, tau, hits, start, length, hitTimes, phsAnum, phsBnum);
-		}
-		else {
-			createSynthRun(&sfmt, fName, tau, lround(hits*exp(-HOLD_T/TAU_N)), start+HOLD_T, length+HOLD_T, hitTimes, phsAnum, phsBnum);
-		}
-		shortRun = !shortRun;
-	}*/
+    #ifdef PARALLEL
+        MPI_Finalize();
+    #endif
 }
 
 template<typename T, typename F>
@@ -619,8 +466,6 @@ std::vector<event> createSynthRun(sfmt_t* sfmt, double rate, std::function<doubl
 //	double rate = num / LENGTH;
 	//printf("%f\n", rate);
 	
-	double length = 10.0;
-	
 	std::vector<event> evts;
 	
 	event evt;
@@ -630,7 +475,7 @@ std::vector<event> createSynthRun(sfmt_t* sfmt, double rate, std::function<doubl
 	double coincHitTime = 0.0;
 	while(true) {
 		coincHitTime += -log(pop(sfmt))/rate;
-		if(coincHitTime > length) {
+		if(coincHitTime > LENGTH) {
 			break;
 		}
 		numCreated += 1;
@@ -673,7 +518,7 @@ std::vector<event> createSynthRun(sfmt_t* sfmt, double rate, std::function<doubl
 	evt.ch = 1;
 	while(true) {
 		bkgHitTime += -log(pop(sfmt))/BKGRATEA;
-		if(bkgHitTime > length) {
+		if(bkgHitTime > LENGTH) {
 			break;
 		}
 		evt.realtime = bkgHitTime;
@@ -683,7 +528,7 @@ std::vector<event> createSynthRun(sfmt_t* sfmt, double rate, std::function<doubl
 	evt.ch = 2;
 	while(true) {
 		bkgHitTime += -log(pop(sfmt))/BKGRATEB;
-		if(bkgHitTime > length) {
+		if(bkgHitTime > LENGTH) {
 			break;
 		}
 		evt.realtime = bkgHitTime;
@@ -693,7 +538,7 @@ std::vector<event> createSynthRun(sfmt_t* sfmt, double rate, std::function<doubl
 	bkgHitTime = 0.0;
 	while(true) {
 		bkgHitTime += -log(pop(sfmt))/COINCBKGRATE;
-		if(bkgHitTime > length) {
+		if(bkgHitTime > LENGTH) {
 			break;
 		}
 		uint32_t index = genIndex(phs_bkg, pop64(sfmt));
