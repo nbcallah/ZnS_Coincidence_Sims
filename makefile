@@ -16,7 +16,7 @@ debug: all
 
 single: CPP = g++
 single: CC = gcc
-single: LOC = -DLOCAL
+single: LOC = LOCAL
 single: randomGenerator-2016-2017_Efficiency
 
 parallel: CPP = mpic++

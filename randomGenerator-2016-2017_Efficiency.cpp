@@ -214,7 +214,9 @@ int main(int argc, char** argv) {
         MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     
         sfmt_t sfmt;
-        uint32_t seed[4] = {2736687128, 234302120, 3355772407, 657836083};
+//        uint32_t seed[4] = {2736687128, 234302120, 3355772407, 657836083};
+//        uint32_t seed[4] = {1442580942, 935855167, 628671478, 1310454353};
+        uint32_t seed[4] = {603152652, 399842403, 1829605360, 117999748};
         sfmt_init_by_array(&sfmt, seed, 4);
         //sfmt_init_gen_rand(&sfmt, (uint32_t)4321);
 
@@ -223,7 +225,8 @@ int main(int argc, char** argv) {
         }
     #else
         sfmt_t sfmt;
-        uint32_t seed[4] = {2736687128, 234302120, 3355772407, 657836083};
+//        uint32_t seed[4] = {2736687128, 234302120, 3355772407, 657836083};
+        uint32_t seed[4] = {603152652, 399842403, 1829605360, 117999748};
         sfmt_init_by_array(&sfmt, seed, 4);
         //sfmt_init_gen_rand(&sfmt, (uint32_t)4321);
     #endif
